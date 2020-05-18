@@ -1,4 +1,6 @@
-function calculate(e){
+var Dollar; 
+
+function calculate(e) {
   var result = document.getElementById("result");
   if (e.keyCode == 13){//если код клавиши enter
 	var v = document.getElementById("expression").value.trim();	//обрезаем пробеллы
@@ -6,7 +8,8 @@ function calculate(e){
 		
 	if (v != ""){//проверяем текст на постоту
 		try
-		{
+        {
+            v = "(" + v + ")*" + Dollar;// add a dollar to any operation
 		    ex.Expression(v);//устанавливаем введеный текст в объект библиотек
 			result.innerText = "= " + ex.Evaluate();//выводимый результат число и равно
 		 }
@@ -18,14 +21,24 @@ function calculate(e){
   else result.innerText = "";
 }
 
-/*var needle=require("needle");
-var cherio=require("cherio");
-url="https://www.tinkoff.ru/about/exchange/";
-needle.get(url,function(err,res)){
-	if (err) throw(err);
-	var $ = cheerio.load(res.body);
-	console.log($(".Text__text_1yBRv Text__text_size_40_27eFU Text__text_sizeDesktop_50_2TLwf Text__text_weight_200_2kUNN").text())
-};*/
+document.addEventListener('DOMContentLoaded', function () { 
+    var XHR = ("onload" in new XMLHttpRequest()) ? XMLHttpRequest : XDomainRequest;// check for the existence of the XMLHttpRequest class, if not, then use the XDomainRequest class (for old IE)
+    var xhr = new XHR(); //instantiation
+    xhr.open('GET', 'https://api.tinkoff.ru/v1/currency_rates', true); // we refer to the link with the API
+    xhr.onload = function () {  //download function description
+        var json = JSON.parse(this.responseText); // Parsing json data into json object
+        if (json.resultCode == 'OK') { //checks for elements
+            var rates = json.payload.rates; //unloaded a variable from an object
+            for (var i in rates) { // in each element of the array takes an object and checks it for a value.
+                if (rates[i].category == 'DebitCardsTransfers') {
+                    if (rates[i].toCurrency.code == 643 && rates[i].fromCurrency.code == 840) {
+                        Dollar = rates[i].sell;
+                    }
+                }
+            }
+        }
+    } //if everything is correct, then we take the value sell
+    xhr.send();
 
 document.addEventListener('DOMContentLoaded', function() { 
 
